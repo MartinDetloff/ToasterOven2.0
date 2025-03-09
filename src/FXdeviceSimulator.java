@@ -133,7 +133,7 @@ public class FXdeviceSimulator extends Application {
                     pressPower(powerButton);
 
                     // send a message back to make sure the simulator knows we toggled the power
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(1, isPowerOn ? 1 : 2)));
+//                    sendMessage(new ArrayList<Integer>(Arrays.asList(1, isPowerOn ? 1 : 2)));
 
                 }
                 //toggle light
@@ -716,15 +716,8 @@ public class FXdeviceSimulator extends Application {
     private void handleBroilButtonClick(Button broilButton){
         broilButton.setOnMouseClicked(event -> {
 
-//                try {
-////                    sendMessage(new ArrayList<Integer>(Arrays.asList(10)));
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-
             sett = setting.BROIL;
             pre = preset.None;
-            //System.out.println("Clicked on the broil button");
         });
     }
 
@@ -1166,7 +1159,12 @@ public class FXdeviceSimulator extends Application {
      */
     private void handlePowerButtonClicks(Circle powerButton){
         powerButton.setOnMouseClicked(event -> {
-            pressPower(powerButton);
+            try {
+                sendMessage(new ArrayList<Integer>(Arrays.asList(1, isPowerOn ? 1 : 2)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+//            pressPower(powerButton);
         });
     }
 
@@ -1206,12 +1204,7 @@ public class FXdeviceSimulator extends Application {
             // turn the power off and disable all the buttons
             powerButton.setFill(Color.BLACK);
             isPowerOn = false;
-//                turnOffAllButtons();
-            // if the light is on turn it off
-//                if (isLightOn){
-//                    toggleLight();
-//                    lightButton.setFill(Color.BLACK);
-//                }
+
         }
         else {
             System.out.println("Power On");

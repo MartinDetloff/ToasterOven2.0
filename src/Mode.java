@@ -1,7 +1,9 @@
-public class Mode {
+public class Mode{
 
     private String currentMode;
     private String currentPreset;
+    private boolean isOnTemp;
+    private boolean isOnTime;
 
     public Mode(String currentMode, String currentPreset){
         this.currentMode = currentMode;
@@ -12,7 +14,7 @@ public class Mode {
      * @param mode the mode (bake, broil, roast)
      */
     public void setMode(String mode){
-
+        currentMode = mode;
     }
 
     /**
@@ -20,7 +22,7 @@ public class Mode {
      * @param preset the preset (nuggets, pizza)
      */
     public void setPreset(String preset){
-
+        currentPreset = preset;
     }
 
     /**
@@ -41,6 +43,9 @@ public class Mode {
      * Method to increment the button that we are focused on (temp, time)
      */
     public void increment(){
+        if(isOnTemp){
+
+        }
 
     }
 

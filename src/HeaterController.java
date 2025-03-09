@@ -1,30 +1,36 @@
 public class HeaterController {
+    boolean topHeater;
+    boolean bottomHeater;
 
+    HeaterController() {
+        this.topHeater = false;
+        this.bottomHeater = false;
+    }
     /**
      * Method to turn on the top heater
      */
-    private void turnOnTopHeater(){
-
+    public void turnOnTopHeater(){
+        topHeater = true;
     }
 
     /**
      * Method to turn on the bottom heater
      */
-    private void turnOnBottomHeater(){
-
+    public void turnOnBottomHeater(){
+        bottomHeater = true;
     }
 
     /**
      * Method to turn off the bottom heater
      */
-    private void turnOffBottomHeater(){
-
+    public void turnOffBottomHeater(){
+        bottomHeater = false;
     }
 
     /**
      * Method to turn off the top heater
      */
-    private void turnOffTopHeater(){
-
+    public void turnOffTopHeater(){
+        topHeater = false;
     }
 }
