@@ -37,5 +37,6 @@ public class Message {
  * 24: Increment pressed
  * 25: Decrement pressed
  * 26: Start pressed
- * 27: 
+ * 27: Stop/Clear pressed
+ 
  */
