@@ -35,7 +35,7 @@ public class SimulatorSocketClient {
      * @param messageNumber the message number
      * @throws IOException for errors
      */
-    public void sendMessage(int messageNumber) throws IOException {
+    public void sendMessage(ArrayList<Integer> messageNumber) throws IOException {
         if (out != null){
             out.writeObject(messageNumber);
         }

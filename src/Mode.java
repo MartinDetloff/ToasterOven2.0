@@ -2,13 +2,12 @@ public class Mode{
 
     private String currentMode;
     private String currentPreset;
-    private boolean isOnTemp;
-    private boolean isOnTime;
 
-    public Mode(String currentMode, String currentPreset){
-        this.currentMode = currentMode;
-        this.currentPreset = currentPreset;
+    public Mode(){
+        this.currentMode = "Roast";
+        this.currentPreset = "None";
     }
+
     /**
      * Method to set the mode
      * @param mode the mode (bake, broil, roast)
@@ -23,39 +22,18 @@ public class Mode{
      */
     public void setPreset(String preset){
         currentPreset = preset;
-    }
-
-    /**
-     * Method to focus on the temp
-     */
-    public void focusTemp(){
 
     }
 
     /**
-     * Method to focus on the time
+     * Method to return the current mode
+     * @return
      */
-    public void focusTime(){
-
+    public String getCurrentMode(){
+        return currentMode;
     }
 
-    /**
-     * Method to increment the button that we are focused on (temp, time)
-     */
-    public void increment(){
-        if(isOnTemp){
-
-        }
-
+    public String getCurrentPreset(){
+        return currentPreset;
     }
-
-    /**
-     * Method to decrement the button that we are focused on (temp, time)
-     */
-    public void decrement(){
-
-    }
-
-
-
 }

@@ -48,9 +48,9 @@ public class FXdeviceSimulator extends Application {
     private Circle lightButton;
     private Rectangle door = setupDoor();
     private ArrayList<Button> allButtons = new ArrayList<>();
-    private SimpleIntegerProperty currentTimeMinutes = new SimpleIntegerProperty(0);
+    private SimpleIntegerProperty currentTimeMinutes = new SimpleIntegerProperty(5);
     private SimpleIntegerProperty currentTimeSeconds = new SimpleIntegerProperty(0);
-    private SimpleIntegerProperty currentTempF = new SimpleIntegerProperty(0);
+    private SimpleIntegerProperty currentTempF = new SimpleIntegerProperty(350);
     private ObjectOutputStream out;
 
 
@@ -93,8 +93,6 @@ public class FXdeviceSimulator extends Application {
 
             out = new ObjectOutputStream(clientSocket.getOutputStream());
 
-//                sendMessage(1);
-
             // make a thread to listen for and process messages
             processMessages(in);
 //                updateCavityTemp(100);
@@ -125,8 +123,8 @@ public class FXdeviceSimulator extends Application {
     private void processMessages(ObjectInputStream inputStream) throws IOException,
             ClassNotFoundException {
         while (inputStream != null){
-            int currentMessage = (int) inputStream.readObject();
-            switch (currentMessage){
+            ArrayList<Integer> currentMessage = (ArrayList<Integer>) inputStream.readObject();
+            switch (currentMessage.getFirst()){
                 // toggle power
                 case 1 -> {
                     System.out.println("Got a message to turn on power");
@@ -141,56 +139,64 @@ public class FXdeviceSimulator extends Application {
                     toggleLight(); // toggle light
 
                     // send message back telling them we turned on the light
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(2, isLightOn ? 1 : 2)));
+//                    sendMessage(new ArrayList<Integer>(Arrays.asList(2, isLightOn ? 1 : 2)));
                 }
-                //toggle top heater
+                //turn on top heater
                 case 3 -> {
+                    toggleTopHeaterOn();
 
-                    if (!isTopHeaterOn){
-                        toggleTopHeaterOn();
-                    }
-                    else{
-                        toggleTopHeaterOff();
-                    }
 
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(3, isTopHeaterOn ? 1 : 2 )));
+
+//                    sendMessage(new ArrayList<Integer>(Arrays.asList(3, isTopHeaterOn ? 1 : 2 )));
 
                 }
-                //toggle bottom heater
+                //turn on bottom heater
                 case 4 -> {
-                    if (!isBottomHeaterOn){
-                        toggleBottomHeaterOn();
-                    }
-                    else {
-                        toggleBottomHeaterOff();
-                    }
+                    toggleBottomHeaterOn();
 
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(4,isBottomHeaterOn ? 1 : 2)));
+
+//                    sendMessage(new ArrayList<Integer>(Arrays.asList(4,isBottomHeaterOn ? 1 : 2)));
 
                 }
 
                 case 5 -> {
+                    setDisplay(currentMessage.get(1), 0 , currentMessage.get(2));
                     // send the temp back
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(
-                            5,
-                            numberTempButtonPressedIncrement,
-                            numberTempButtonPressedDecrement))
-                    );
+//                    sendMessage(new ArrayList<Integer>(Arrays.asList(
+//                            5,
+//                            numberTempButtonPressedIncrement,
+//                            numberTempButtonPressedDecrement))
+//                    );
+//
+//                    numberTempButtonPressedDecrement = 0;
+//                    numberTempButtonPressedIncrement = 0;
 
-                    numberTempButtonPressedDecrement = 0;
-                    numberTempButtonPressedIncrement = 0;
                 }
 
                 case 6 -> {
-                    // send back the time
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(
-                            6,
-                            numberTimeButtonPressedIncrement,
-                            numberTimeButtonPressedDecrement))
-                    );
 
-                    numberTimeButtonPressedDecrement = 0;
-                    numberTimeButtonPressedIncrement = 0;
+                    if (currentMessage.get(1) == 1){
+                        System.out.println("preset pizza");
+                        pre = preset.Pizza;
+
+                    }
+                    else if (currentMessage.get(1) == 0){
+                        System.out.println("preset NONE");
+                        pre = preset.None;
+                    }
+                    else{
+                        System.out.println("preset nuggets");
+                        pre = preset.Nuggets;
+                    }
+                    // send back the time
+//                    sendMessage(new ArrayList<Integer>(Arrays.asList(
+//                            6,
+//                            numberTimeButtonPressedIncrement,
+//                            numberTimeButtonPressedDecrement))
+//                    );
+//
+//                    numberTimeButtonPressedDecrement = 0;
+//                    numberTimeButtonPressedIncrement = 0;
                 }
                 // toggle door
                 case 7 -> {
@@ -199,33 +205,43 @@ public class FXdeviceSimulator extends Application {
                     sendMessage(new ArrayList<Integer>(Arrays.asList(7, doorStatus ? 1 : 2)));
 
                 }
-                // kill the heaters and send a message back
+                //Change mode based upon message
                 case 8 -> {
+                    if (currentMessage.get(1) == 1){
+                        System.out.println("mode bake");
+                        sett = setting.BAKE;
 
-                    killHeaters();
+                    }
+                    else if (currentMessage.get(1) == 0){
+                        System.out.println("mode Roast");
+                        sett = setting.ROAST;
+                    }
+                    else{
+                        System.out.println("mode broil");
+                        sett = setting.BROIL;
+                    }
 
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(8)));
+
                 }
 
                 // sets the display to a predetermined time and temp
                 case 9 ->{
-
-                    setDisplay(10,0,375);
-
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(9)));
+                    clearDisplay();
                 }
 
-                // this is sending back a message to the simulator saying that we cleared the display
-                case 10 ->{
+                // turn off top heater
+                case 10 -> {
+                    toggleTopHeaterOff();
 
-                    clearDisplay();
-
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(10)));
+                }
+                //turn off bottom heater
+                case 11 -> {
+                    toggleBottomHeaterOff();
                 }
 
 
                 // this is sending back the status of the cook types as requested by the simulator
-                case 11 ->{
+                case 12 ->{
                     switch (sett) {
                         case setting.BAKE -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 1)));
                         case setting.BROIL -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 2)));
@@ -235,7 +251,7 @@ public class FXdeviceSimulator extends Application {
                 }
 
                 // this is sending back the status of the presets as requested by the simulator
-                case 12 ->{
+                case 13 ->{
                     switch(pre){
                         case pre.Nuggets-> sendMessage(new ArrayList<Integer>(Arrays.asList(12,1)));
                         case pre.Pizza -> sendMessage(new ArrayList<Integer>(Arrays.asList(12,2)));
@@ -593,8 +609,8 @@ public class FXdeviceSimulator extends Application {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                currentTempF.set(0);
-                currentTimeMinutes.set(0);
+                currentTempF.set(350);
+                currentTimeMinutes.set(5);
                 currentTimeSeconds.set(0);
             }
         });
@@ -622,12 +638,17 @@ public class FXdeviceSimulator extends Application {
         timeButton.setOnMouseClicked(event -> {
             System.out.println("Clicked on the time button");
 
+            try {
+                sendMessage(new ArrayList<>(Arrays.asList(15)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             if (!isOnTime){
 //                    setTimeText(displayText);
                 timeButton.setStyle("-fx-font-weight: bold;");
                 tempButton.setStyle("-fx-font-weight: normal;");
-                this.isOnTime = true;
-                this.isOnTemp = false;
+//                this.isOnTime = true;
+//                this.isOnTemp = false;
             }
         });
     }
@@ -638,13 +659,20 @@ public class FXdeviceSimulator extends Application {
      */
     private void handleTempButtonClick(Button tempButton, Button timeButton){
         tempButton.setOnMouseClicked(event -> {
+
+            try {
+                sendMessage(new ArrayList<>(Arrays.asList(16)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
             System.out.println("Clicked on the temp button");
             if (!isOnTemp){
 //                    setTempText(displayText);
                 tempButton.setStyle("-fx-font-weight: bold;");
                 timeButton.setStyle("-fx-font-weight: normal;");
-                this.isOnTemp = true;
-                this.isOnTime = false;
+//                this.isOnTemp = true;
+//                this.isOnTime = false;
             }
         });
     }
@@ -695,15 +723,19 @@ public class FXdeviceSimulator extends Application {
      */
     private void handleBakeButtonClick(Button bakeButton){
         bakeButton.setOnMouseClicked(event -> {
-
+            try {
+                sendMessage(new ArrayList<>(Arrays.asList(17)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 //                try {
 //                    sendMessage(new ArrayList<Integer>(Arrays.asList(9)));
 //                } catch (IOException e) {
 //                    throw new RuntimeException(e);
 //                }
 
-            sett = setting.BAKE;
-            pre = preset.None;
+//            sett = setting.BAKE;
+//            pre = preset.None;
             //System.out.println("Clicked on the bake button");
 
         });
@@ -716,8 +748,13 @@ public class FXdeviceSimulator extends Application {
     private void handleBroilButtonClick(Button broilButton){
         broilButton.setOnMouseClicked(event -> {
 
-            sett = setting.BROIL;
-            pre = preset.None;
+            try {
+                sendMessage(new ArrayList<>(Arrays.asList(18)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+//            sett = setting.BROIL;
+//            pre = preset.None;
         });
     }
 
@@ -734,8 +771,13 @@ public class FXdeviceSimulator extends Application {
 //                    throw new RuntimeException(e);
 //                }
 
-            sett = setting.ROAST;
-            pre = preset.None;
+            try {
+                sendMessage(new ArrayList<>(Arrays.asList(19)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+//            sett = setting.ROAST;
+//            pre = preset.None;
             //System.out.println("Clicked on the roast button");
         });
     }
@@ -773,30 +815,32 @@ public class FXdeviceSimulator extends Application {
     private void handlePreButtonClick(Button pizza, Button nuggets){
         pizza.setOnMouseClicked(event -> {
 
-//                try {
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(11)));
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
 
-//                sett = setting.BAKE;
-            pre = preset.Pizza;
-            //currentTimeMinutes.set(15);
-            //currentTempF.set(375);
+            try {
+                if (pre == preset.Pizza){
+                    sendMessage(new ArrayList<>(Arrays.asList(28)));
+                }
+                else {
+                    sendMessage(new ArrayList<>(Arrays.asList(20)));
+                }
 
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
+
         nuggets.setOnMouseClicked(event -> {
 
-//                try {
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(12)));
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-
-//                sett = setting.ROAST;
-            pre = preset.Nuggets;
-            //currentTimeMinutes.set(10);
-            //currentTempF.set(400);
+            try {
+                if (pre == preset.Nuggets){
+                    sendMessage(new ArrayList<>(Arrays.asList(28)));
+                }
+                else {
+                    sendMessage(new ArrayList<>(Arrays.asList(21)));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
@@ -829,7 +873,7 @@ public class FXdeviceSimulator extends Application {
         stopButton.setOnMousePressed(event -> {
 
             try {
-                sendMessage(new ArrayList<Integer>(Arrays.asList(14)));
+                sendMessage(new ArrayList<Integer>(Arrays.asList(27)));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -903,7 +947,7 @@ public class FXdeviceSimulator extends Application {
         startButton.setOnMouseClicked(event -> {
 
             try {
-                sendMessage(new ArrayList<Integer>(Arrays.asList(13)));
+                sendMessage(new ArrayList<Integer>(Arrays.asList(26)));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -937,6 +981,7 @@ public class FXdeviceSimulator extends Application {
             //heater is dead
         }else {
             if (heaters[0].getFill() == Color.BLACK) {
+                System.out.println("Setting the top heater to be on ");
                 FillTransition ft = new FillTransition(Duration.seconds(6), heaters[0], Color.BLACK, Color.RED);
                 ft.setCycleCount(0);
                 ft.setAutoReverse(false);
@@ -944,6 +989,7 @@ public class FXdeviceSimulator extends Application {
             } else {
                 heaters[0].setFill(Color.RED);
             }
+
             isTopHeaterOn = true;
         }
 
@@ -1036,34 +1082,20 @@ public class FXdeviceSimulator extends Application {
      */
     private void handleIncrementButtonClick(Polygon incrementButton){
         incrementButton.setOnMouseClicked(event -> {
-
-            System.out.println("Clicked on the increment button");
-            if (isOnTime) {
-
-                numberTimeButtonPressedIncrement++;
-//                    try {
-//                        sendMessage(6);
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    }
-
-                //currentTimeMinutes.set(currentTimeMinutes.get() + 1);
+            try {
+                sendMessage(new ArrayList<>(Arrays.asList(24)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            else if(isOnTemp){
 
-                numberTempButtonPressedIncrement++;
-//                    try {
-//                        sendMessage(4);
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    }
-
-                // the max temp is 500
-                //if (currentTempF.get() < 500){
-                //   currentTempF.set(currentTempF.get() + 15);
-                // }
-            }
-            timesPressed = 0;
+//            System.out.println("Clicked on the increment button");
+//            if (isOnTime) {
+//                numberTimeButtonPressedIncrement++;
+//            }
+//            else if(isOnTemp){
+//                numberTempButtonPressedIncrement++;
+//            }
+//            timesPressed = 0;
         });
     }
 
@@ -1076,40 +1108,44 @@ public class FXdeviceSimulator extends Application {
     private void handleDecrementButtonClick(Polygon decrementButton){
         decrementButton.setOnMouseClicked(event -> {
 
-
-
-            System.out.println("Clicked on the decrement button");
-            if(isOnTime){
-
-                numberTimeButtonPressedDecrement++;
-
-//                    try {
-//                        sendMessage(7);
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    }
-
-                // the min is always 0
-                //if (currentTimeMinutes.get() != 0){
-                // currentTimeMinutes.set(currentTimeMinutes.get() - 1);
-                //  }
+            try {
+                sendMessage(new ArrayList<>(Arrays.asList(25)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            else if (isOnTemp){
 
-                numberTempButtonPressedDecrement++;
-
-//                    try {
-//                        sendMessage(5);
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    }
-
-                // the min is always 0
-                // if (currentTempF.get() != 0){
-                //    currentTempF.set(currentTempF.get() - 15);
-                //  }
-            }
-            timesPressed = 0;
+//            System.out.println("Clicked on the decrement button");
+//            if(isOnTime){
+//
+//                numberTimeButtonPressedDecrement++;
+//
+////                    try {
+////                        sendMessage(7);
+////                    } catch (IOException e) {
+////                        throw new RuntimeException(e);
+////                    }
+//
+//                // the min is always 0
+//                //if (currentTimeMinutes.get() != 0){
+//                // currentTimeMinutes.set(currentTimeMinutes.get() - 1);
+//                //  }
+//            }
+//            else if (isOnTemp){
+//
+//                numberTempButtonPressedDecrement++;
+//
+////                    try {
+////                        sendMessage(5);
+////                    } catch (IOException e) {
+////                        throw new RuntimeException(e);
+////                    }
+//
+//                // the min is always 0
+//                // if (currentTempF.get() != 0){
+//                //    currentTempF.set(currentTempF.get() - 15);
+//                //  }
+//            }
+//            timesPressed = 0;
         });
     }
 
@@ -1161,6 +1197,9 @@ public class FXdeviceSimulator extends Application {
         powerButton.setOnMouseClicked(event -> {
             try {
                 sendMessage(new ArrayList<Integer>(Arrays.asList(1, isPowerOn ? 1 : 2)));
+//                sendMessage(new ArrayList<Integer>(Arrays.asList(3, isTopHeaterOn ? 1 : 2)));
+//                sendMessage(new ArrayList<Integer>(Arrays.asList(4, isBottomHeaterOn ? 1 : 2)));
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -1176,17 +1215,27 @@ public class FXdeviceSimulator extends Application {
         lightButton.setOnMouseClicked(event -> {
             // Light
             // es not turn on after
+
+
             if(!isPowerOn){
-                System.out.println("Not On");
+                System.out.println("Power not On");
             }else{
+
+                // send the status to the controller
+                try {
+                    sendMessage(new ArrayList<Integer>(Arrays.asList(2, isLightOn ? 1 : 2)));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
                 if(!isLightOn)
                 {
                     System.out.println("Setting light to true");
-                    isLightOn = true;
+//                    isLightOn = true;
                     lightButton.setFill(Color.GREEN);
                 }else{
                     System.out.println("Setting light to false");
-                    isLightOn = false;
+//                    isLightOn = false;
                     lightButton.setFill(Color.BLACK);
                 }
             }
@@ -1236,7 +1285,7 @@ public class FXdeviceSimulator extends Application {
      * Method to turn on/off the light depending on the message from socket.
      */
     private void toggleLight(){
-
+        System.out.println("toggling light");
         if (!isLightOn) {
             window.setFill(Color.LIGHTYELLOW);
             lightButton.setFill(Color.GREEN);

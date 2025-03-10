@@ -1,27 +1,18 @@
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
 public class Controller {
-    private InputInterface inputInterface;
-    private Timer ourTimer;
+    private InputInterface iiFace;
+    private Timer timer1;
     private LightController lightController;
     private DoorMonitor doorMonitor;
     private Cooking cooking;
 
-//    public Controller(){
-//
-//    }
-
-
-        //Fields
         Timer timer = new Timer();
 
         boolean powerIsOn = false;
@@ -120,11 +111,12 @@ public class Controller {
         public Controller(String host, int port) throws  IOException{
             try {
                 socketClient = new SimulatorSocketClient(host, port);
-                inputInterface = new InputInterface(this);
+                iiFace = new InputInterface(this);
                 timer = new Timer();
-                lightController = new LightController();
+                lightController = new LightController(this);
                 doorMonitor = new DoorMonitor();
-                cooking = new Cooking();
+                cooking = new Cooking(this);
+
 
                 new Thread(() -> {
                     try {
@@ -155,14 +147,12 @@ public class Controller {
         //Toggle methods for toggleable fields
         public void togglePower() throws IOException {
             // TODO: Send a message here
-            socketClient.sendMessage(1);
-
-
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(1)));
         }
 
-        public void toggleLight() throws IOException{
+        public void sendLightMessage() throws IOException{
             // send the message to the fx
-            socketClient.sendMessage(2);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(2)));
 
         }
         public void toggleDoorSensor() throws IOException {
@@ -179,7 +169,7 @@ public class Controller {
 
         public void toggleDoor() throws IOException {
             // send a message saying to toggle the door
-            socketClient.sendMessage(7);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(7)));
         }
 
 
@@ -193,29 +183,31 @@ public class Controller {
                 turnOnTopHeater();
 
                 System.out.println("Turned on top heater");
-                socketClient.sendMessage(3);
+//                socketClient.sendMessage(new ArrayList<>(Arrays.asList(3)));
             }
             if(heatersUsed[1]){
 
                 turnOnBottomHeater();
 
                 System.out.println("Turned on bottom heater");
-                socketClient.sendMessage(4);
+//                socketClient.sendMessage(new ArrayList<>(Arrays.asList(4)));
             }
         }
 
         /**
          * Method to turn on the top heater
          */
-        private void turnOnTopHeater(){
+        public void turnOnTopHeater() throws IOException {
             topHeaterIsOn = true;
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(3)));
         }
 
         /**
          * Method to turn on the bottom heater
          */
-        private void turnOnBottomHeater(){
+        public void turnOnBottomHeater() throws IOException {
             bottomHeaterIsOn = true;
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(4)));
         }
 
 
@@ -226,22 +218,22 @@ public class Controller {
         public void turnHeatersOff() throws IOException{
             turnTopHeaterOff();
             turnBottomHeaterOff();
-
-            socketClient.sendMessage(6);
         }
 
         /**
          * Method to turn off the top heater
          */
-        private void turnTopHeaterOff(){
+        public void turnTopHeaterOff() throws IOException {
             topHeaterIsOn = false;
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(10)));
         }
 
         /**
          * Method to turn off the bottom heater
          */
-        private void turnBottomHeaterOff(){
+        public void turnBottomHeaterOff() throws IOException {
             bottomHeaterIsOn = false;
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(11)));
         }
 
 
@@ -253,7 +245,7 @@ public class Controller {
             topHeaterIsOn = !topHeaterIsOn;
 
             // send a message to the GUI to toggle the top heater
-            socketClient.sendMessage(3);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(3)));
         }
 
         /**
@@ -264,7 +256,7 @@ public class Controller {
             bottomHeaterIsOn = !bottomHeaterIsOn;
 
             // send a message to the GUI to toggle the bottom heater
-            socketClient.sendMessage(4);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(4)));
         }
 
         /**
@@ -288,7 +280,7 @@ public class Controller {
          * @throws IOException ..
          */
         public void getTempButtonStatus() throws IOException {
-            socketClient.sendMessage(5);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(5)));
         }
 
         /**
@@ -296,14 +288,14 @@ public class Controller {
          * @throws IOException ..
          */
         public void getTimeButtonStatus() throws IOException {
-            socketClient.sendMessage(6);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(6)));
         }
 
         /**
          * Method to clear the Display
          */
         public void clearDisplay() throws IOException{
-            socketClient.sendMessage(10);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(10)));
 
         }
 
@@ -311,45 +303,132 @@ public class Controller {
          * method to set the display
          */
         public void setDisplay() throws IOException{
-            socketClient.sendMessage(9);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(9)));
         }
         /**
          * Ask for the current temp
          */
         public void getTemp() throws  IOException{
-            socketClient.sendMessage(5);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(5)));
         }
         /**
          * Ask for the current time
          */
         public void getTime() throws IOException{
-            socketClient.sendMessage(6);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(6)));
         }
         /**
          * get if a preset was clicked
          */
         public void getLatestPreset() throws IOException{
-            socketClient.sendMessage(12);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(12)));
         }
         /**
          * get what cook type is
          */
         public void getLatestCookType() throws IOException{
-            socketClient.sendMessage(11);
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(11)));
         }
         /**
          * Method to receive an int and do the appropriate action according to the int passed in
          */
-        public void handleInput(ArrayList<Integer> listIn) throws IOException {
+
+    /**
+     *  * Messages FROM FXdeviceSimulator
+     *  * 15: Time focus pressed
+     *  * 16: Temp focus pressed
+     *  * 17: Bake pressed
+     *  * 18: Broil pressed
+     *  * 19: Roast pressed
+     *  * 20: Pizza pressed
+     *  * 21: Nuggets pressed
+     *  * 22: Light pressed
+     *  * 23: Power pressed
+     *  * 24: Increment pressed
+     *  * 25: Decrement pressed
+     *  * 26: Start pressed
+     *  * 27: Stop/clear pressed
+     * @param listIn
+     * @throws IOException
+     */
+    public void handleInput(ArrayList<Integer> listIn) throws IOException {
             int messageNum = listIn.get(0);
             System.out.println("Handling input of number " + listIn.get(0));
 
+            if (messageNum != 27){
+                cooking.setNumberOfStopTimesPressed(0);
+            }
 
             switch(messageNum) {
 
+                case 15:
+                    iiFace.focusTime();
+                    break;
+                case 16:
+                    iiFace.focusTemp();
+                    break;
+                case 17:
+                    iiFace.setMode("bake");
+                    sendMessageToUpdateMode(1);
+                    break;
+                case 18:
+                    iiFace.setMode("broil");
+                    sendMessageToUpdateMode(2);
+                    break;
+                case 19:
+                    iiFace.setMode("roast");
+                    sendMessageToUpdateMode(0);
+                    break;
+                case 20:
+                    iiFace.setPreset("pizza");
+                    break;
+                case 21:
+                    iiFace.setPreset("nuggets");
+                    break;
+                case 22:
+                    if(lightController.getStatus()) {
+                        lightController.turnOffLight();
+                    }
+                    else{
+                        lightController.turnOnLight();
+                    }
+                    break;
+                case 23:
+                    boolean isPowerOn = listIn.get(1) == 1;
+                    powerIsOn = isPowerOn;
+                    iiFace.togglePower();
+                    break;
+                case 24:
+                    iiFace.increment();
+                    break;
+                case 25:
+                    iiFace.decrement();
+                    break;
+                case 26:
+                    System.out.println("Cooking procedure started");
+                    cooking.setCookMode(iiFace.getMode().getCurrentMode());
+                    cooking.setCookTime(iiFace.getCurrentTime());
+                    cooking.setCookTemp(iiFace.getCurrentTemp());
+                    //todo: start cooking procedure
+//                    cooking = new Cooking(this,
+//                            iiFace.getMode().getCurrentMode(),
+//                            iiFace.getCurrentTemp(),
+//                            iiFace.getCurrentTime()
+//                    );
+
+                    break;
+                case 27:
+                    cooking.setNumberOfStopTimesPressed(cooking.getNumberOfStopTimesPressed() + 1);
+                    cooking.stopCooking();
+
+                    break;
+                case 28:
+                    iiFace.setPreset("None");
+                    break;
+
                 case 1:
 //                togglePower();
-//                    boolean isPowerOn = listIn.get(1) == 1;
+
 //
 //                    System.out.println("Successfully toggled the power it is now " +
 //                            (isPowerOn ? "On" : "Off" ));
@@ -357,89 +436,42 @@ public class Controller {
 //                    // update the power
 //                    powerIsOn = isPowerOn;
 
-                    inputInterface.togglePower();
+                    iiFace.togglePower();
 
                     break;
-
                 case 2:
-//                toggleDoorSensor();
 
                     boolean isLightOn = listIn.get(1) == 1;
-
-                    System.out.println("Successfully toggled the light it is now " +
-                            (isLightOn ? "On" : "Off"));
-
-                    // update the light status
                     lightIsOn = isLightOn;
 
-                    break;
-
-                case 3:
-//                toggleLight();
-
-                    boolean isTopHeaterOn = listIn.get(1) == 1;
-
-                    System.out.println("Successfully toggled the top heater it is now " +
-                            (isTopHeaterOn ? "On" : "Off"));
-
-                    topHeaterIsOn = isTopHeaterOn;
+                    if (isLightOn){
+                        lightController.turnOnLight();
+                    }
+                    else {
+                        lightController.turnOffLight();
+                    }
 
                     break;
 
-                case 4:
 
-                    boolean isBotHeaterOn = listIn.get(1) == 1;
-
-                    System.out.println("Successfully toggled the bottom heater it is now " +
-                            (isBotHeaterOn ? "On" : "Off"));
-
-                    bottomHeaterIsOn = isBotHeaterOn;
-                    break;
-
-                case 5:
-                    System.out.println("Successfully got the ststus of the temp increments it was incremented " +
-                            listIn.get(1) + " Times and decremented " + listIn.get(2) + " Times");
-                    // TODO : Maybe update the display text status here for later.
-                    break;
-
-                case 6:
-                    System.out.println("Successfully got the ststus of the time increments it was incremented " +
-                            listIn.get(1) + " Times and decremented " + listIn.get(2) + " Times");
-                    // TODO : Maybe update teh display text status here for later.
-                    break;
-
-                case 7:
-                    boolean doorStat = listIn.get(1) == 1;
-                    System.out.println("Successfully toggled the door it is now " +
-                            (doorStat ? "open" : "closed"));
-
-                    doorIsOpen = doorStat;
-                    break;
-
-                case 8:
-//                cookMode = 1;
-//                heatersUsed[0] = true;
-//                heatersUsed[1] = true;
-                    System.out.println("Successfully killed the heaters ");
-                    break;
 
                 case 9:
-//                cookMode = 2;
-//                heatersUsed[1] = true;
-//                heatersUsed[0] = false;
+                cookMode = 2;
+                heatersUsed[1] = true;
+                heatersUsed[0] = false;
                     System.out.println("Set the display");
                     break;
 
                 case 10:
-//                cookMode = 3;
-//                heatersUsed[1] = false;
-//                heatersUsed[0] = true;
+                cookMode = 3;
+                heatersUsed[1] = false;
+                heatersUsed[0] = true;
                     System.out.println("Cleared the display");
                     break;
 
                 case 11:
-//                cookTime = 900;
-//                cookTemp = 375;
+                cookTime = 900;
+                cookTemp = 375;
                     int cookingType = listIn.get(1);
                     String cookingTypeString = "None";
 
@@ -468,19 +500,47 @@ public class Controller {
 
                     break;
 
-                case 13:
-                    startCooking();
-                    break;
-
-                case 14:
-                    stopCooking();
-                    break;
-
             }
         }
 
+        /**
+         * Method to send a message to update the display
+         * @param time the time
+         * @param temp the temp
+         * @throws IOException ..
+         */
+        public void sendMessageToUpdateDisplay(int time, int temp) throws IOException {
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(5, time, temp)));
+        }
 
         /**
+         * Method to update the preset
+         */
+        public void sendMessageToUpdatePreset(int preset) throws IOException {
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(6, preset)));
+        }
+        /**
+         * Method to send the mode of cooking.
+         */
+        public void sendMessageToUpdateMode(int mode) throws IOException {
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(8, mode)));
+        }
+
+        /**
+         * Send a message to clear everything
+         * @throws IOException ..
+         */
+        public void clearEverything() throws IOException {
+
+            iiFace.setPreset("None");
+            iiFace.setMode("bake");
+            iiFace.setCurrentTemp(350);
+            iiFace.setCurrentTime(5);
+
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(9)));
+        }
+
+    /**
          * Method to start the cooking process. When it is called the method checks to see if the power is on. If the power is on and
          * the door is closed then the cook starts (Begins a thread method that starts a cook).
          */
@@ -538,49 +598,49 @@ public class Controller {
          */
         public void resetOven() throws IOException {
             stopCooking();
-            toggleLight();
+//            toggleLight();
             cookTemp = 350;
             cookTime = 300;
             cookMode = 1;
         }
 
-        /**
-         * Method to start the cook
-         */
-        public void startCooking(){
-            //System.out.println("Starting " + cookMode + " cook at " + cookTemp + " degrees fahrenheit for " + cookTime + " seconds.");
-            isCooking = true;
-            if(heatersUsed[0]){
-                //TODO send message to turn on top heater
-            }
-            if(heatersUsed[1]){
-                //TODO send message to turn on bottom heater
-            }
-
-            timer.scheduleAtFixedRate(task, 0, 1000);
-
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    System.out.println("Cancelling the task after " + cookTime + " seconds.");
-                    timer.cancel();
-                }
-            }, cookTime * 1000);
-
-            //Turn on all the stuff
-            //Watch interrupts while timer runs
-            //At interrupt, pause
-            //At timer finish, stop and reset
-
-            //setting up threads to run and cook
-
-            /**
-             * I don't think we need this boolean any-more do we?
-             */
-            threadLive=true;
-
-            interrupter.start();
-        }
+//        /**
+//         * Method to start the cook
+//         */
+//        public void startCooking(){
+//            //System.out.println("Starting " + cookMode + " cook at " + cookTemp + " degrees fahrenheit for " + cookTime + " seconds.");
+//            isCooking = true;
+//            if(heatersUsed[0]){
+//                //TODO send message to turn on top heater
+//            }
+//            if(heatersUsed[1]){
+//                //TODO send message to turn on bottom heater
+//            }
+//
+//            timer.scheduleAtFixedRate(task, 0, 1000);
+//
+//            new Timer().schedule(new TimerTask() {
+//                @Override
+//                public void run() {
+//                    System.out.println("Cancelling the task after " + cookTime + " seconds.");
+//                    timer.cancel();
+//                }
+//            }, cookTime * 1000);
+//
+//            //Turn on all the stuff
+//            //Watch interrupts while timer runs
+//            //At interrupt, pause
+//            //At timer finish, stop and reset
+//
+//            //setting up threads to run and cook
+//
+//            /**
+//             * I don't think we need this boolean any-more do we?
+//             */
+//            threadLive=true;
+//
+//            interrupter.start();
+//        }
 
         /**
          * Method that converts the minutes from the first two elements of cookingInfo into seconds and returns them as an int

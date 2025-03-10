@@ -8,4 +8,5 @@ public class DoorMonitor {
     public boolean getDoorStatus(){
         return isDoorOpen;
     }
+
 }
