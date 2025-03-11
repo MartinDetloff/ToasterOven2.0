@@ -1,11 +1,13 @@
 public class Status {
-    private double time;
+    private double timeMin;
+    private double timeSec;
     private double temp;
 
 
-    public Status(double temp, double time){
+    public Status(double temp, double timeMin, double timeSec){
         this.temp = temp;
-        this.time = time;
+        this.timeMin = timeMin;
+        this.timeSec = timeSec;
     }
 
     /**
@@ -18,10 +20,18 @@ public class Status {
 
     /**
      * Method to display a new time
-     * @param time the new time to display
+     * @param timeMin the new time to display
      */
-    public void displayNewTime(double time){
-        this.time = time;
+    public void displayNewTimeMin(double timeMin){
+        this.timeMin = timeMin;
+    }
+
+    /**
+     * Method to display a new time
+     * @param timeSec the new time to display
+     */
+    public void displayNewTimeSec(double timeSec){
+        this.timeSec = timeSec;
     }
 
     /**
@@ -36,7 +46,14 @@ public class Status {
      * Getter for the time
      * @return the time
      */
-    public double getTime(){
-        return this.time;
+    public double getTimeMin(){
+        return this.timeMin;
+    }
+    /**
+     * Getter for the time
+     * @return the time
+     */
+    public double getTimeSec(){
+        return this.timeSec;
     }
 }

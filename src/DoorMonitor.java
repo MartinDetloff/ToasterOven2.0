@@ -5,8 +5,15 @@ public class DoorMonitor {
      * Method to return the door status
      * @return true if door is open/ false if door is closed.
      */
-    public boolean getDoorStatus(){
+    public boolean getDoorStatus() {
         return isDoorOpen;
+    }
+    public void changeStatus(){
+        if(isDoorOpen){
+            isDoorOpen = false;
+        }else{
+            isDoorOpen = true;
+        }
     }
 
 }

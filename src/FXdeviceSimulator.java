@@ -7,6 +7,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.Circle;
@@ -52,6 +53,9 @@ public class FXdeviceSimulator extends Application {
     private SimpleIntegerProperty currentTimeSeconds = new SimpleIntegerProperty(0);
     private SimpleIntegerProperty currentTempF = new SimpleIntegerProperty(350);
     private ObjectOutputStream out;
+    private Label cavity = new Label();
+    //Set the handle
+    Rectangle handle = new Rectangle();
 
 
     Rectangle window = setupWindow();
@@ -82,7 +86,6 @@ public class FXdeviceSimulator extends Application {
      */
     private void setUpServerSocket(){
         int port = 1234;
-//            System.out.println("Server start");
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server listening on port : " + port);
 
@@ -95,7 +98,6 @@ public class FXdeviceSimulator extends Application {
 
             // make a thread to listen for and process messages
             processMessages(in);
-//                updateCavityTemp(100);
 
         } catch (IOException e) {
             System.out.println("Socket Closed");;
@@ -130,47 +132,25 @@ public class FXdeviceSimulator extends Application {
                     System.out.println("Got a message to turn on power");
                     pressPower(powerButton);
 
-                    // send a message back to make sure the simulator knows we toggled the power
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(1, isPowerOn ? 1 : 2)));
-
                 }
+
                 //toggle light
                 case 2 -> {
-                    toggleLight(); // toggle light
-
-                    // send message back telling them we turned on the light
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(2, isLightOn ? 1 : 2)));
+                    toggleLight();
                 }
+
                 //turn on top heater
                 case 3 -> {
                     toggleTopHeaterOn();
-
-
-
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(3, isTopHeaterOn ? 1 : 2 )));
-
                 }
+
                 //turn on bottom heater
                 case 4 -> {
                     toggleBottomHeaterOn();
-
-
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(4,isBottomHeaterOn ? 1 : 2)));
-
                 }
 
                 case 5 -> {
-                    setDisplay(currentMessage.get(1), 0 , currentMessage.get(2));
-                    // send the temp back
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(
-//                            5,
-//                            numberTempButtonPressedIncrement,
-//                            numberTempButtonPressedDecrement))
-//                    );
-//
-//                    numberTempButtonPressedDecrement = 0;
-//                    numberTempButtonPressedIncrement = 0;
-
+                    setDisplay(currentMessage.get(1), currentMessage.get(2), currentMessage.get(3));
                 }
 
                 case 6 -> {
@@ -188,23 +168,19 @@ public class FXdeviceSimulator extends Application {
                         System.out.println("preset nuggets");
                         pre = preset.Nuggets;
                     }
-                    // send back the time
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(
-//                            6,
-//                            numberTimeButtonPressedIncrement,
-//                            numberTimeButtonPressedDecrement))
-//                    );
-//
-//                    numberTimeButtonPressedDecrement = 0;
-//                    numberTimeButtonPressedIncrement = 0;
+
                 }
+
                 // toggle door
                 case 7 -> {
-                    toggleDoor();
-
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(7, doorStatus ? 1 : 2)));
+                    if(currentMessage.get(1) == 1){
+                        //changeDoor();
+                    }else {
+                        //changeDoorBack();
+                    }
 
                 }
+
                 //Change mode based upon message
                 case 8 -> {
                     if (currentMessage.get(1) == 1){
@@ -220,8 +196,6 @@ public class FXdeviceSimulator extends Application {
                         System.out.println("mode broil");
                         sett = setting.BROIL;
                     }
-
-
                 }
 
                 // sets the display to a predetermined time and temp
@@ -234,11 +208,11 @@ public class FXdeviceSimulator extends Application {
                     toggleTopHeaterOff();
 
                 }
+
                 //turn off bottom heater
                 case 11 -> {
                     toggleBottomHeaterOff();
                 }
-
 
                 // this is sending back the status of the cook types as requested by the simulator
                 case 12 ->{
@@ -261,17 +235,6 @@ public class FXdeviceSimulator extends Application {
         }
     }
 
-    /**
-     * Method to update the cavity temp
-     */
-    private void updateCavityTemp(int temp){
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                currentTempF.set(temp);
-            }
-        });
-    }
 
     /**
      * Method to be used later to decrement the timer every second
@@ -303,13 +266,13 @@ public class FXdeviceSimulator extends Application {
         Pane mainSection = setupMainSection();
 
         //Set the handle
-        Rectangle handle = setupHandle();
+         handle = setupHandle();
 
         //Set the tray
         Rectangle tray = setupTray();
 
         //Adds all the main section elements.
-        mainSection.getChildren().addAll(door,window,handle,tray,heaters[0],heaters[1]);
+        mainSection.getChildren().addAll(door,window,handle,tray,heaters[0],heaters[1],cavity);
         // this is just the right hand section in general
         VBox rightHandSection = setUpRightHandSection();
 
@@ -341,9 +304,6 @@ public class FXdeviceSimulator extends Application {
         // set the right and the center
         root.setRight(rightHandSection);
         root.setCenter(mainSection);
-
-        // turn off all the buttons initially
-//            turnOffAllButtons();
 
 
         // just setting the scene and the primary stage
@@ -433,8 +393,19 @@ public class FXdeviceSimulator extends Application {
         handle.setOnMouseClicked(event -> {
             if(doorStatus){
                 doorStatus = false;
+                changeDoor();
+//                try {
+//                    sendMessage(new ArrayList<Integer>(Arrays.asList(7,1)));
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
             }else{
                 doorStatus = true;
+//                try {
+//                    sendMessage(new ArrayList<Integer>(Arrays.asList(7,2)));
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
             }
         });
     }
@@ -447,15 +418,11 @@ public class FXdeviceSimulator extends Application {
             System.out.println("Door is now Closed");
             doorStatus = false;
 
-            //door.setFill(Color.BLACK);
-            // window.setFill(Color.LIGHTGRAY);
         }else
         {
             System.out.println("Door is now Open");
 
             doorStatus = true;
-            //door.setFill(Color.TRANSPARENT);
-            //window.setFill(Color.TRANSPARENT);
 
         }
     }
@@ -527,7 +494,7 @@ public class FXdeviceSimulator extends Application {
         display.setStyle("-fx-border-color: black;");
 
 
-        // adding the buttons to the display and we also needthe text
+        // adding the buttons to the display and we also need the text
         Button timeButton = new Button("Time");
         timeButton.setStyle("-fx-font-family: 'Comic Sans MS'");
         timeButton.setStyle("-fx-border-color: black");
@@ -536,6 +503,13 @@ public class FXdeviceSimulator extends Application {
         tempButton.setStyle("-fx-font-family: 'Comic Sans MS'");
         tempButton.setStyle("-fx-border-color: black");
 
+        cavity.setLayoutX(75);
+        cavity.setLayoutY(100);
+        cavity.setStyle("-fx-border-color: black");
+        cavity.setText("100");
+
+
+
         Label displayText = new Label();
         displayText.textProperty().bind(Bindings.concat(
                 currentTimeMinutes.asString("%02d"),
@@ -543,12 +517,7 @@ public class FXdeviceSimulator extends Application {
                 currentTempF.asString("%02d"), " F°"
         ));
         displayText.setStyle("-fx-font-family: 'Comic Sans MS'");
-//            displayText.textProperty().bind(
-//                    Bindings.concat(
-//                    currentTimeMinutes.asString("%02d"),
-//                    ":",currentTimeMinutes.asString("%02d")
-//                    )
-//            );
+
 
         // adding the button to the arrayList
         allButtons.add(timeButton);
@@ -590,13 +559,15 @@ public class FXdeviceSimulator extends Application {
      * @param sec
      * @param temp
      */
-    private void setDisplay(int Min,int sec, int temp){
+    private void setDisplay(int Min, int sec, int temp){
+        System.out.println("in set display");
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 currentTimeSeconds.set(sec);
                 currentTimeMinutes.set(Min);
                 currentTempF.set(temp);
+//                cavity.setText(String.valueOf(temp));
             }
         });
 
@@ -644,11 +615,8 @@ public class FXdeviceSimulator extends Application {
                 throw new RuntimeException(e);
             }
             if (!isOnTime){
-//                    setTimeText(displayText);
                 timeButton.setStyle("-fx-font-weight: bold;");
                 tempButton.setStyle("-fx-font-weight: normal;");
-//                this.isOnTime = true;
-//                this.isOnTemp = false;
             }
         });
     }
@@ -671,8 +639,6 @@ public class FXdeviceSimulator extends Application {
 //                    setTempText(displayText);
                 tempButton.setStyle("-fx-font-weight: bold;");
                 timeButton.setStyle("-fx-font-weight: normal;");
-//                this.isOnTemp = true;
-//                this.isOnTime = false;
             }
         });
     }
@@ -728,15 +694,6 @@ public class FXdeviceSimulator extends Application {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-//                try {
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(9)));
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-
-//            sett = setting.BAKE;
-//            pre = preset.None;
-            //System.out.println("Clicked on the bake button");
 
         });
     }
@@ -753,8 +710,6 @@ public class FXdeviceSimulator extends Application {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-//            sett = setting.BROIL;
-//            pre = preset.None;
         });
     }
 
@@ -765,20 +720,11 @@ public class FXdeviceSimulator extends Application {
     private void handleRoastButtonClick(Button roastButton){
         roastButton.setOnMouseClicked(event -> {
 
-//                try {
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(8)));
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-
             try {
                 sendMessage(new ArrayList<>(Arrays.asList(19)));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-//            sett = setting.ROAST;
-//            pre = preset.None;
-            //System.out.println("Clicked on the roast button");
         });
     }
 
@@ -927,7 +873,6 @@ public class FXdeviceSimulator extends Application {
 
         startButton.setStyle("-fx-font-family: 'Comic Sans MS'");
         startButton.setStyle("-fx-border-color: black");
-//            startButton.setStyle("-fx-background-color: silver");
 
         // handle the mouse clicks
         handleStartButtonClick(startButton);
@@ -952,7 +897,6 @@ public class FXdeviceSimulator extends Application {
                 throw new RuntimeException(e);
             }
 
-            //startButton();
         });
     }
     private void startButton(){
@@ -982,7 +926,7 @@ public class FXdeviceSimulator extends Application {
         }else {
             if (heaters[0].getFill() == Color.BLACK) {
                 System.out.println("Setting the top heater to be on ");
-                FillTransition ft = new FillTransition(Duration.seconds(6), heaters[0], Color.BLACK, Color.RED);
+                FillTransition ft = new FillTransition(Duration.seconds(3), heaters[0], Color.BLACK, Color.RED);
                 ft.setCycleCount(0);
                 ft.setAutoReverse(false);
                 ft.play();
@@ -1004,7 +948,7 @@ public class FXdeviceSimulator extends Application {
             //heater is dead
         }else {
             if (heaters[1].getFill() == Color.BLACK) {
-                FillTransition ft = new FillTransition(Duration.seconds(6), heaters[1], Color.BLACK, Color.RED);
+                FillTransition ft = new FillTransition(Duration.seconds(3), heaters[1], Color.BLACK, Color.RED);
                 ft.setCycleCount(0);
                 ft.setAutoReverse(false);
                 ft.play();
@@ -1021,7 +965,7 @@ public class FXdeviceSimulator extends Application {
      */
     private void toggleTopHeaterOff(){
         if(heaters[0].getFill() == Color.RED) {
-            FillTransition ft = new FillTransition(Duration.seconds(6), heaters[0], Color.RED, Color.BLACK);
+            FillTransition ft = new FillTransition(Duration.seconds(.5), heaters[0], Color.RED, Color.BLACK);
             ft.setCycleCount(0);
             ft.setAutoReverse(false);
             ft.play();
@@ -1036,7 +980,7 @@ public class FXdeviceSimulator extends Application {
      */
     private void toggleBottomHeaterOff(){
         if(heaters[1].getFill() == Color.RED) {
-            FillTransition ft = new FillTransition(Duration.seconds(6), heaters[1], Color.RED, Color.BLACK);
+            FillTransition ft = new FillTransition(Duration.seconds(.5), heaters[1], Color.RED, Color.BLACK);
             ft.setCycleCount(0);
             ft.setAutoReverse(false);
             ft.play();
@@ -1056,8 +1000,6 @@ public class FXdeviceSimulator extends Application {
         Polygon triangleIncrement = new Polygon(0, 50, 50, 50, 25, 0);
         Polygon triangleDecrement = new Polygon(0, 0, 50, 0, 25, 50);
 
-//            Image image = new Image(Objects.requireNonNull(getClass().getResource("add-icon3.PNG")).toExternalForm());
-//            Image image2 = new Image(Objects.requireNonNull(getClass().getResource("subtract-icon1.PNG")).toExternalForm());
 
         triangleIncrement.setStyle("-fx-border-color: white");
         triangleDecrement.setStyle("-fx-border-color: white");
@@ -1087,15 +1029,6 @@ public class FXdeviceSimulator extends Application {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-//            System.out.println("Clicked on the increment button");
-//            if (isOnTime) {
-//                numberTimeButtonPressedIncrement++;
-//            }
-//            else if(isOnTemp){
-//                numberTempButtonPressedIncrement++;
-//            }
-//            timesPressed = 0;
         });
     }
 
@@ -1113,39 +1046,6 @@ public class FXdeviceSimulator extends Application {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-//            System.out.println("Clicked on the decrement button");
-//            if(isOnTime){
-//
-//                numberTimeButtonPressedDecrement++;
-//
-////                    try {
-////                        sendMessage(7);
-////                    } catch (IOException e) {
-////                        throw new RuntimeException(e);
-////                    }
-//
-//                // the min is always 0
-//                //if (currentTimeMinutes.get() != 0){
-//                // currentTimeMinutes.set(currentTimeMinutes.get() - 1);
-//                //  }
-//            }
-//            else if (isOnTemp){
-//
-//                numberTempButtonPressedDecrement++;
-//
-////                    try {
-////                        sendMessage(5);
-////                    } catch (IOException e) {
-////                        throw new RuntimeException(e);
-////                    }
-//
-//                // the min is always 0
-//                // if (currentTempF.get() != 0){
-//                //    currentTempF.set(currentTempF.get() - 15);
-//                //  }
-//            }
-//            timesPressed = 0;
         });
     }
 
@@ -1197,8 +1097,6 @@ public class FXdeviceSimulator extends Application {
         powerButton.setOnMouseClicked(event -> {
             try {
                 sendMessage(new ArrayList<Integer>(Arrays.asList(1, isPowerOn ? 1 : 2)));
-//                sendMessage(new ArrayList<Integer>(Arrays.asList(3, isTopHeaterOn ? 1 : 2)));
-//                sendMessage(new ArrayList<Integer>(Arrays.asList(4, isBottomHeaterOn ? 1 : 2)));
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -1213,8 +1111,7 @@ public class FXdeviceSimulator extends Application {
      */
     private void handleLightButtonClicks(Circle lightButton){
         lightButton.setOnMouseClicked(event -> {
-            // Light
-            // es not turn on after
+            // Light is not turn on after
 
 
             if(!isPowerOn){
@@ -1302,4 +1199,16 @@ public class FXdeviceSimulator extends Application {
         heaterKill = true;
 
     }
+    private void changeDoor(){
+        handle.setFill(Color.TRANSPARENT);
+        door.setFill(Color.TRANSPARENT);
+        door.setStroke(Color.TRANSPARENT);
+    }
+    private void changeDoorBack(){
+        handle.setFill(Color.BLACK);
+        door.setFill(Color.LIGHTGREY);
+        door.setStroke(Color.BLACK);
+
+    }
+
 }

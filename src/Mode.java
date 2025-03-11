@@ -4,7 +4,7 @@ public class Mode{
     private String currentPreset;
 
     public Mode(){
-        this.currentMode = "Roast";
+        this.currentMode = "Bake";
         this.currentPreset = "None";
     }
 

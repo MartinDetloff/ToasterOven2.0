@@ -8,11 +8,12 @@ public class InputInterface {
     private boolean isOnTemp = false;
     private boolean isOnTime = false;
     private double currentTemp = 350;
-    private double currentTime = 5;
+    private double currentTimeMin = 5;
+    private double currentTimeSec = 0;
 
 
     public InputInterface(Controller controller){
-        this.status = new Status(350, 5);
+        this.status = new Status(350, 5, 0);
         this.control = new Control();
         this.mode = new Mode();
         this.controller = controller;
@@ -49,7 +50,6 @@ public class InputInterface {
     public void togglePower() throws IOException {
         control.togglePower();
         controller.togglePower();
-//        boolean newPowerStatus = !control.getPowerButton();
     }
 
     public void startButtonPress(){
@@ -79,8 +79,8 @@ public class InputInterface {
         if(mode.getCurrentPreset().equals("None")) {
             if (isOnTemp && currentTemp < 500 ) {
                 currentTemp += 15;
-            } else if(isOnTime && currentTime < 200){
-                currentTime += 1;
+            } else if(isOnTime && currentTimeMin < 200){
+                currentTimeMin += 1;
             }
             this.updateDisplay();
         }
@@ -91,10 +91,12 @@ public class InputInterface {
      */
     public void decrement() throws IOException {
         if(mode.getCurrentPreset().equals("None")) {
+
             if (isOnTemp && currentTemp > 100) {
                 currentTemp -= 15;
-            } else if(isOnTime && currentTime > 0){
-                currentTime -= 1;
+
+            } else if(isOnTime && currentTimeMin > 1){
+                currentTimeMin -= 1;
             }
             this.updateDisplay();
         }
@@ -106,9 +108,13 @@ public class InputInterface {
      * Method to update the display
      */
     public void updateDisplay() throws IOException {
+
         status.displayNewTemp(currentTemp);
-        status.displayNewTime(currentTime);
-        controller.sendMessageToUpdateDisplay((int) currentTime, (int) currentTemp);
+        status.displayNewTimeMin(currentTimeMin);
+        status.displayNewTimeSec(currentTimeSec);
+
+        System.out.println("updating the display hr");
+        controller.sendMessageToUpdateDisplay((int) currentTimeMin,(int) currentTimeSec , (int) currentTemp);
 //        controller.setDisplay();
     }
 
@@ -125,14 +131,16 @@ public class InputInterface {
         else if (preset.equals("pizza")){
             controller.sendMessageToUpdatePreset(1);
             currentTemp = 400;
-            currentTime = 15;
-            controller.sendMessageToUpdateDisplay((int) currentTime, (int) currentTemp);
+            currentTimeMin = 15;
+            currentTimeSec = 0;
+            controller.sendMessageToUpdateDisplay((int) currentTimeMin, (int) currentTimeSec,(int) currentTemp);
         }
         else if (preset.equals("nuggets")){
             controller.sendMessageToUpdatePreset(2);
             currentTemp = 375;
-            currentTime = 10;
-            controller.sendMessageToUpdateDisplay((int) currentTime, (int) currentTemp);
+            currentTimeMin = 10;
+            currentTimeSec = 0;
+            controller.sendMessageToUpdateDisplay((int) currentTimeMin, (int) currentTimeSec, (int) currentTemp);
         }
     }
 
@@ -140,12 +148,24 @@ public class InputInterface {
         return (int)this.currentTemp;
     }
 
-    public int getCurrentTime(){
-        return (int) this.currentTime;
+    public int getCurrentTimeMin(){
+        return (int) this.currentTimeMin;
     }
 
-    public void setCurrentTime(int newTime){
-        this.currentTime = newTime;
+    /**
+     *
+     * @param newTimeMin
+     */
+    public void setCurrentTimeMin(int newTimeMin){
+        this.currentTimeMin = newTimeMin;
+    }
+
+    /**
+     *
+     * @param newTimeSec
+     */
+    public void setCurrentTimeSec(int newTimeSec){
+        this.currentTimeSec = newTimeSec;
     }
 
     public void setCurrentTemp(int newTemp){

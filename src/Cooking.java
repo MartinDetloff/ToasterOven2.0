@@ -1,7 +1,7 @@
 import java.io.IOException;
 
 public class Cooking {
-    private TempSensor tempSensor;
+    private heatMonitor sensor;
     private HeaterController heaterController;
     private Controller controller;
     private int cookTemp;
@@ -10,32 +10,28 @@ public class Cooking {
     private int numberOfStopTimesPressed = 0;
 
     public Cooking(Controller controller){
-        tempSensor = new TempSensor();
         heaterController = new HeaterController();
         this.controller = controller;
     }
 
-    public Cooking(Controller controller, String mode, int temp, int time){
-        tempSensor = new TempSensor();
+    public Cooking(Controller controller, String mode, int desiredTemp, int time){
+        this.sensor  = new heatMonitor(desiredTemp, controller);
         heaterController = new HeaterController();
         this.controller = controller;
         this.cookMode = mode;
-        this.cookTemp = temp;
+        this.cookTemp = desiredTemp;
         this.cookTime = time;
     }
 
 
-    public void setCookMode(String mode ){
-        this.cookMode = mode;
-    }
-    public void setCookTemp(int temp){
-        this.cookTemp = temp;
-    }
-    public void setCookTime(int time){
-        this.cookTime = time;
-    }
-    private void startCooking(String Mode) throws IOException {
-        switch(Mode){
+    /**
+     * Method to start the cooking.
+     * @throws IOException ..
+     */
+    public void startCooking(String mode, int desiredTemp, int time) throws IOException {
+        this.sensor  = new heatMonitor(desiredTemp, controller);
+        System.out.println(cookMode);
+        switch(mode){
             case "Roast" -> {
                 turnOnTopHeater();
                 turnOnBottomHeater();
@@ -43,7 +39,7 @@ public class Cooking {
             }
             case "Bake" ->{
                 turnOffBottomHeater();
-                turnOffTopHeater();
+                turnOnTopHeater();
 
             }
             case "Broil"->{
@@ -52,7 +48,13 @@ public class Cooking {
 
             }
         }
+        // preheat
+        sensor.turnOnHeaters();
 
+
+        // start cooking timer
+        while(sensor.cavityTemp < cookTemp) {}
+        new Thread(() -> controller.setUpTimer()).start();
     }
 
     public void turnOnTopHeater() throws IOException {
@@ -76,27 +78,46 @@ public class Cooking {
     }
 
     public void stopCooking() throws IOException {
+
+        // pressed the stop button once (Stop)
         if (numberOfStopTimesPressed == 1){
+            System.out.println("stopped cooking (Stop Button Pushed)");
             heaterController.turnOffBottomHeater();
             heaterController.turnOffTopHeater();
-            System.out.println("stopped cooking");
 
+            // stop timer (Save current values)
+            controller.stopCookingTimer();
             controller.stopCooking();
         }
-        else {
+
+        // pressed the stop button twice (Clear)
+        else if (numberOfStopTimesPressed == 2){
+            System.out.println("Cleared Presets (Clear Button Pushed)");
             // clear case
-            System.out.println("cleared presets");
             controller.clearEverything();
         }
 
+        // finished cooking naturally
+        else {
+            System.out.println("Finished cooking");
+            // Turn off the top/ Bottom heaters
+            heaterController.turnOffBottomHeater();
+            heaterController.turnOffTopHeater();
+
+            // send messages to javaFX from the controller
+            controller.clearEverything();
+            controller.stopCooking();
+        }
+        sensor.turnOffHeaters();
     }
 
     private void reset(){
 
     }
 
-    private void getTempReading(){
-        //get temp at the time
+    public int getTempReading(){
+        return sensor.getCavityTemp();
+
     }
 
     public void setNumberOfStopTimesPressed(int timesPressed){
