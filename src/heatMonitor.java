@@ -37,6 +37,9 @@ public class heatMonitor extends Thread {
         return cavityTemp;
     }
 
+    /**
+     * Methods to activates the heaters, top and bottom individually or together
+     */
     public void turnOnHeaters(){
         this.heatersOn = true;
     }
@@ -46,10 +49,11 @@ public class heatMonitor extends Thread {
     }
 
 
-
+    /**
+     * As long as the heaters are on, this will increase the temperature until it reaches the desired temperature.
+     */
     public void handleTemp() throws InterruptedException, IOException {
         while (true) {
-            System.out.println("This is the cavity temp " + cavityTemp);
             if (heatersOn) {
                 if (cavityTemp < desiredTemp - 50) {
                     cavityTemp += 50;

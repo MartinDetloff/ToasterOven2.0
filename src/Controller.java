@@ -393,10 +393,7 @@ public class Controller {
         }
 
         public void tempDis(){
-                    System.out.println("In the temp display");
-                    System.out.println(cooking.getTempReading());
                     iiFace.setCurrentTemp(cooking.getTempReading());
-                    System.out.println(iiFace.getCurrentTemp());
                    try{
                        iiFace.updateDisplay();
                     } catch (RuntimeException | IOException e) {
@@ -492,7 +489,6 @@ public class Controller {
         * Method to update the door
         */
         public void sendMessageToUpdateDoor() throws IOException{
-            System.out.println(doorMonitor.getDoorStatus());
             socketClient.sendMessage(new ArrayList<>(Arrays.asList(7, doorMonitor.getDoorStatus() ? 1 : 2)));
         }
 

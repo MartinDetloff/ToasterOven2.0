@@ -36,10 +36,6 @@ public class InputInterface {
         controller.togglePower();
     }
 
-    public void startButtonPress(){
-
-    }
-
     /**
      * Method to focus on the temp
      */
@@ -97,9 +93,7 @@ public class InputInterface {
         status.displayNewTimeMin(currentTimeMin);
         status.displayNewTimeSec(currentTimeSec);
 
-        System.out.println("updating the display hr");
         controller.sendMessageToUpdateDisplay((int) currentTimeMin,(int) currentTimeSec , (int) currentTemp);
-//        controller.setDisplay();
     }
 
     /**
@@ -128,10 +122,12 @@ public class InputInterface {
         }
     }
 
+    /**
+     * Retrieval of the current temperature and time in minutes
+     * */
     public int getCurrentTemp(){
         return (int)this.currentTemp;
     }
-
     public int getCurrentTimeMin(){
         return (int) this.currentTimeMin;
     }
@@ -150,7 +146,6 @@ public class InputInterface {
      * @param newTimeSec
      */
     public void setCurrentTimeSec(int newTimeSec){
-        System.out.println("Setting the seconds to " + newTimeSec);
         this.currentTimeSec = newTimeSec;
         status.displayNewTimeSec(newTimeSec);
     }

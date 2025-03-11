@@ -48,10 +48,7 @@ public class SimulatorSocketClient {
      */
     public void waitForMessages() throws IOException, ClassNotFoundException, InterruptedException {
         while (true){
-//            int messageNum = 0;
             ArrayList<Integer> listIn = (ArrayList<Integer>) in.readObject();
-//            messageNum = listIn.get(0)
-//            System.out.println("The message number is " + messageNum);
             blockingQueue.put(listIn);
         }
     }

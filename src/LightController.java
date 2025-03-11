@@ -24,6 +24,9 @@ public class LightController {
         controller.sendLightMessage();
     }
 
+    /**
+     * Retrieval of the current status
+     */
     public boolean getStatus(){
         return this.lightStatus;
     }

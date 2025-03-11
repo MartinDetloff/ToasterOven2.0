@@ -15,14 +15,6 @@ public class Cooking {
         this.sensor  = new heatMonitor(controller);
     }
 
-//    public Cooking(Controller controller, String mode, int desiredTemp, int time){
-//        this.sensor  = new heatMonitor(desiredTemp, controller);
-//        heaterController = new HeaterController();
-//        this.controller = controller;
-//        this.cookMode = mode;
-//        this.cookTemp = desiredTemp;
-//        this.cookTime = time;
-//    }
 
 
     /**
@@ -53,23 +45,15 @@ public class Cooking {
         // preheat
         sensor.turnOnHeaters();
 
-
-
-//        // start cooking timer
-//        while(sensor.cavityTemp < desiredTemp) {
-//
-//            if (desiredTemp == sensor.cavityTemp){
-//                break;
-//            }
-//        }
-
         Thread.sleep(((desiredTemp ) / 50) * 1000);
 
-        System.out.println("Passed");
 
         new Thread(() -> controller.setUpTimer()).start();
     }
 
+    /**
+     * Methods to access the heaters between the controller and the heat controller
+     */
     public void turnOnTopHeater() throws IOException {
         heaterController.turnOnTopHeater();
         controller.turnOnTopHeater();
@@ -90,6 +74,9 @@ public class Cooking {
         controller.turnBottomHeaterOff();
     }
 
+    /**
+     * Method that stops the cooking
+     */
     public void stopCooking(boolean isDoor) throws IOException {
         controller.setIsCooking(false);
         if (numberOfStopTimesPressed == 1 || isDoor){

@@ -29,7 +29,6 @@ public class FXdeviceSimulator extends Application {
     private int toasterHeight = 500;
     private int toasterMainSectionWidth = 700;
     private int toasterRightSectionWidth = 200;
-    private int totalToasterWidth = 700;
     private boolean isPowerOn = false;
     private boolean isOnTemp = false;
     private boolean isOnTime = false;
@@ -39,10 +38,6 @@ public class FXdeviceSimulator extends Application {
     private boolean doorStatus = false;
     private boolean heaterKill = false;
 
-    private int numberTempButtonPressedIncrement = 0;
-    private int numberTimeButtonPressedIncrement = 0;
-    private int numberTempButtonPressedDecrement = 0;
-    private int numberTimeButtonPressedDecrement = 0;
 
     private int timesPressed = 0;
     private Circle powerButton;
@@ -100,7 +95,7 @@ public class FXdeviceSimulator extends Application {
             processMessages(in);
 
         } catch (IOException e) {
-            System.out.println("Socket Closed");;
+            System.out.println("Socket Closed");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
