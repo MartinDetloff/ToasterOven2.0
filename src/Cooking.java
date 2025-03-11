@@ -92,52 +92,45 @@ public class Cooking {
 
     public void stopCooking(boolean isDoor) throws IOException {
         controller.setIsCooking(false);
-
-        // pressed the stop button once (Stop)
         if (numberOfStopTimesPressed == 1 || isDoor){
-            System.out.println("stopped cooking (Stop Button Pushed/ Door Opened)");
             heaterController.turnOffBottomHeater();
             heaterController.turnOffTopHeater();
-
-            // stop timer (Save current values)
             controller.stopCookingTimer();
             controller.stopCooking();
         }
-
-        // pressed the stop button twice (Clear)
         else if (numberOfStopTimesPressed == 2){
-            System.out.println("Cleared Presets (Clear Button Pushed)");
-            // clear case
             controller.clearEverything();
         }
-
-        // finished cooking naturally
         else {
-            System.out.println("Finished cooking");
-            // Turn off the top/ Bottom heaters
             heaterController.turnOffBottomHeater();
             heaterController.turnOffTopHeater();
-
-            // send messages to javaFX from the controller
             controller.clearEverything();
             controller.stopCooking();
         }
         sensor.turnOffHeaters();
     }
 
-    private void reset(){
-
-    }
-
+    /**
+     * Returns cavity temperature
+     * @return
+     */
     public int getTempReading(){
         return sensor.getCavityTemp();
 
     }
 
+    /**
+     * Sets the number of times the stop button was pressed
+     * @param timesPressed
+     */
     public void setNumberOfStopTimesPressed(int timesPressed){
         this.numberOfStopTimesPressed = timesPressed;
     }
 
+    /**
+     * Returns the number of times the stop button was pressed
+     * @return
+     */
     public int getNumberOfStopTimesPressed(){
         return this.numberOfStopTimesPressed;
     }

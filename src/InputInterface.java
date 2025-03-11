@@ -20,22 +20,6 @@ public class InputInterface {
     }
 
     /**
-     * getter for the current status
-     * @return status
-     */
-    public Status getStatus(){
-        return status;
-    }
-
-    /**
-     * Getter for the current control
-     * @return control
-     */
-    public Control getControl(){
-        return control;
-    }
-
-    /**
      * Getter for the current mode
      * @return mode
      */

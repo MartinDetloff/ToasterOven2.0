@@ -35,14 +35,6 @@ public class Status {
     }
 
     /**
-     * Getter for the temp
-     * @return the temp
-     */
-    public double getTemp(){
-        return this.temp;
-    }
-
-    /**
      * Getter for the time
      * @return the time
      */

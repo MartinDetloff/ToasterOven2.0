@@ -64,13 +64,4 @@ public class SimulatorSocketClient {
     }
 
 
-
-    /**
-     * Method to close the socket
-     * @throws IOException
-     */
-    public void close() throws IOException {
-        socket.close();
-        out.close();
-    }
 }

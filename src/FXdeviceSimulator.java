@@ -217,18 +217,18 @@ public class FXdeviceSimulator extends Application {
                 // this is sending back the status of the cook types as requested by the simulator
                 case 12 ->{
                     switch (sett) {
-                        case setting.BAKE -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 1)));
-                        case setting.BROIL -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 2)));
-                        case setting.ROAST -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 3)));
-                        case setting.NOSETT -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 4)));
+                        case BAKE -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 1)));
+                        case BROIL -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 2)));
+                        case ROAST -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 3)));
+                        case NOSETT -> sendMessage(new ArrayList<Integer>(Arrays.asList(11, 4)));
                     }
                 }
 
                 // this is sending back the status of the presets as requested by the simulator
                 case 13 ->{
                     switch(pre){
-                        case pre.Nuggets-> sendMessage(new ArrayList<Integer>(Arrays.asList(12,1)));
-                        case pre.Pizza -> sendMessage(new ArrayList<Integer>(Arrays.asList(12,2)));
+                        case Nuggets-> sendMessage(new ArrayList<Integer>(Arrays.asList(12,1)));
+                        case Pizza -> sendMessage(new ArrayList<Integer>(Arrays.asList(12,2)));
                     }
                 }
 
