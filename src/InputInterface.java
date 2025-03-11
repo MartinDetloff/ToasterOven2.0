@@ -111,6 +111,8 @@ public class InputInterface {
             currentTemp = 400;
             currentTimeMin = 15;
             currentTimeSec = 0;
+            status.displayNewTimeMin(15);
+            status.displayNewTimeSec(0);
             controller.sendMessageToUpdateDisplay((int) currentTimeMin, (int) currentTimeSec,(int) currentTemp);
         }
         else if (preset.equals("nuggets")){
@@ -118,6 +120,8 @@ public class InputInterface {
             currentTemp = 375;
             currentTimeMin = 10;
             currentTimeSec = 0;
+            status.displayNewTimeSec(0);
+            status.displayNewTimeMin(10);
             controller.sendMessageToUpdateDisplay((int) currentTimeMin, (int) currentTimeSec, (int) currentTemp);
         }
     }

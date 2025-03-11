@@ -301,10 +301,15 @@ public class Controller {
                     sendMessageToUpdateMode(0);
                     break;
                 case 20:
-                    iiFace.setPreset("pizza");
+                    if (!isCooking && powerIsOn){
+                        iiFace.setPreset("pizza");
+                    }
                     break;
                 case 21:
-                    iiFace.setPreset("nuggets");
+                    if (!isCooking && powerIsOn){
+                        iiFace.setPreset("nuggets");
+                    }
+
                     break;
                 case 22:
                     if(lightController.getStatus()) {lightController.turnOffLight();}
@@ -318,10 +323,16 @@ public class Controller {
                     if(!powerIsOn){stopCooking();}
                     break;
                 case 24:
-                    iiFace.increment();
+                    if (!isCooking && powerIsOn){
+                        iiFace.increment();
+                    }
+
                     break;
                 case 25:
-                    iiFace.decrement();
+                    if (!isCooking && powerIsOn){
+                        iiFace.decrement();
+                    }
+
                     break;
 
                 case 26:
