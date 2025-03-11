@@ -309,7 +309,7 @@ public class FXdeviceSimulator extends Application {
 
 
         // just setting the scene and the primary stage
-        primaryStage.setScene(new Scene(root, 700, 500));
+        primaryStage.setScene(new Scene(root, 700, 510));
         primaryStage.show();
     }
 
