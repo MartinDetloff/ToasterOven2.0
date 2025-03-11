@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class FXdeviceSimulator extends Application {
-    private int toasterHeight = 500;
+    private int toasterHeight = 550;
     private int toasterMainSectionWidth = 700;
     private int toasterRightSectionWidth = 200;
     private boolean isPowerOn = false;
@@ -231,6 +231,8 @@ public class FXdeviceSimulator extends Application {
                 case 14 -> {
                     setCavity(currentMessage.get(1));
                 }
+
+
             }
         }
     }
@@ -1130,9 +1132,10 @@ public class FXdeviceSimulator extends Application {
                 System.out.println("Power not On");
             }else{
 
+//                this.isLightOn = !isLightOn;
                 // send the status to the controller
                 try {
-                    sendMessage(new ArrayList<Integer>(Arrays.asList(2, isLightOn ? 1 : 2)));
+                    sendMessage(new ArrayList<Integer>(Arrays.asList(2, !isLightOn ? 1 : 2)));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

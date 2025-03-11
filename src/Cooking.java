@@ -79,6 +79,7 @@ public class Cooking {
      */
     public void stopCooking(boolean isDoor) throws IOException {
         controller.setIsCooking(false);
+
         if (numberOfStopTimesPressed == 1 || isDoor){
             heaterController.turnOffBottomHeater();
             heaterController.turnOffTopHeater();
@@ -93,6 +94,7 @@ public class Cooking {
             heaterController.turnOffTopHeater();
             controller.clearEverything();
             controller.stopCooking();
+            controller.stopCookingTimer();
         }
         sensor.turnOffHeaters();
     }

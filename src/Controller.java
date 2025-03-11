@@ -91,6 +91,16 @@ public class Controller {
         * @throws IOException
         */
         public void togglePower() throws IOException {
+            this.powerIsOn = !this.powerIsOn;
+
+            if (isCooking){
+                cooking.stopCooking(false);
+            }
+            if (lightIsOn){
+                lightController.turnOffLight();
+                lightIsOn = !lightIsOn;
+            }
+
             socketClient.sendMessage(new ArrayList<>(Arrays.asList(1)));
         }
         public void sendLightMessage() throws IOException{
@@ -301,6 +311,7 @@ public class Controller {
                     else{lightController.turnOnLight();}
                     break;
                 case 23:
+                    System.out.println("POWER!");
                     boolean isPowerOn = listIn.get(1) == 1;
                     powerIsOn = isPowerOn;
                     iiFace.togglePower();
@@ -312,8 +323,9 @@ public class Controller {
                 case 25:
                     iiFace.decrement();
                     break;
+
                 case 26:
-                    if (!doorMonitor.getDoorStatus()) {
+                    if (!doorMonitor.getDoorStatus() && powerIsOn) {
                         new Thread(() -> {
                             try {
                                 String cookMode = iiFace.getMode().getCurrentMode();
@@ -329,15 +341,18 @@ public class Controller {
                             }
                         }).start();
                     }
-                    else {}
+//                    else {}
                     break;
+
                 case 27:
                     cooking.setNumberOfStopTimesPressed(cooking.getNumberOfStopTimesPressed() + 1);
                     cooking.stopCooking(false);
                     break;
+
                 case 28:
                     iiFace.setPreset("None");
                     break;
+
                 case 7:
                     if(listIn.get(1)== 1 )
                     {
@@ -350,15 +365,20 @@ public class Controller {
                         sendMessageToUpdateDoor();
                     }
                     break;
+
                 case 1:
+                    System.out.println("Power!!!!!");
                     iiFace.togglePower();
                     break;
+
                 case 2:
                     boolean isLightOn = listIn.get(1) == 1;
                     lightIsOn = isLightOn;
+                    System.out.println("Light is now " + lightIsOn);
                     if (isLightOn){lightController.turnOnLight();}
                     else {lightController.turnOffLight();}
                     break;
+
                 case 9:
                     cookMode = 2;
                     heatersUsed[1] = true;
