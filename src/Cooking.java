@@ -12,37 +12,39 @@ public class Cooking {
     public Cooking(Controller controller){
         heaterController = new HeaterController();
         this.controller = controller;
+        this.sensor  = new heatMonitor(controller);
     }
 
-    public Cooking(Controller controller, String mode, int desiredTemp, int time){
-        this.sensor  = new heatMonitor(desiredTemp, controller);
-        heaterController = new HeaterController();
-        this.controller = controller;
-        this.cookMode = mode;
-        this.cookTemp = desiredTemp;
-        this.cookTime = time;
-    }
+//    public Cooking(Controller controller, String mode, int desiredTemp, int time){
+//        this.sensor  = new heatMonitor(desiredTemp, controller);
+//        heaterController = new HeaterController();
+//        this.controller = controller;
+//        this.cookMode = mode;
+//        this.cookTemp = desiredTemp;
+//        this.cookTime = time;
+//    }
 
 
     /**
      * Method to start the cooking.
      * @throws IOException ..
      */
-    public void startCooking(String mode, int desiredTemp, int time) throws IOException {
-        this.sensor  = new heatMonitor(desiredTemp, controller);
-        System.out.println(cookMode);
+    public void startCooking(String mode, int desiredTemp, int time) throws IOException, InterruptedException {
+        controller.setIsCooking(true);
+        sensor.setDesiredTemp(desiredTemp);
+
         switch(mode){
             case "Roast" -> {
                 turnOnTopHeater();
                 turnOnBottomHeater();
 
             }
-            case "Bake" ->{
+            case "Broil" ->{
                 turnOffBottomHeater();
                 turnOnTopHeater();
 
             }
-            case "Broil"->{
+            case "Bake"->{
                 turnOffTopHeater();
                 turnOnBottomHeater();
 
@@ -52,8 +54,19 @@ public class Cooking {
         sensor.turnOnHeaters();
 
 
-        // start cooking timer
-        while(sensor.cavityTemp < cookTemp) {}
+
+//        // start cooking timer
+//        while(sensor.cavityTemp < desiredTemp) {
+//
+//            if (desiredTemp == sensor.cavityTemp){
+//                break;
+//            }
+//        }
+
+        Thread.sleep(((desiredTemp ) / 50) * 1000);
+
+        System.out.println("Passed");
+
         new Thread(() -> controller.setUpTimer()).start();
     }
 
@@ -77,11 +90,12 @@ public class Cooking {
         controller.turnBottomHeaterOff();
     }
 
-    public void stopCooking() throws IOException {
+    public void stopCooking(boolean isDoor) throws IOException {
+        controller.setIsCooking(false);
 
         // pressed the stop button once (Stop)
-        if (numberOfStopTimesPressed == 1){
-            System.out.println("stopped cooking (Stop Button Pushed)");
+        if (numberOfStopTimesPressed == 1 || isDoor){
+            System.out.println("stopped cooking (Stop Button Pushed/ Door Opened)");
             heaterController.turnOffBottomHeater();
             heaterController.turnOffTopHeater();
 

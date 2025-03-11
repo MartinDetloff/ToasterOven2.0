@@ -29,6 +29,7 @@ public class Controller {
         int cookMode = 1;
 
 
+
         /**Methods and objects used to halt the cooking process or continue it should certain events occur. The lock object
          * is used to */
         boolean timerPause = false;
@@ -356,6 +357,9 @@ public class Controller {
                     boolean isPowerOn = listIn.get(1) == 1;
                     powerIsOn = isPowerOn;
                     iiFace.togglePower();
+                    if(!powerIsOn){
+                        stopCooking();
+                    }
                     break;
                 case 24:
                     iiFace.increment();
@@ -365,29 +369,40 @@ public class Controller {
                     break;
                     // start cooking
                 case 26:
-                    System.out.println("Cooking procedure started");
 
 //                    cooking.setCookMode(iiFace.getMode().getCurrentMode());
 //                    cooking.setCookTime(iiFace.getCurrentTimeMin());
 //                    cooking.setCookTemp(iiFace.getCurrentTemp());
+                    if (!doorMonitor.getDoorStatus()) {
 
-                    new Thread(() -> {
-                        try {
-                            cooking.startCooking(
-                                    iiFace.getMode().getCurrentMode(),
-                                    iiFace.getCurrentTemp(),
-                                    iiFace.getCurrentTimeMin()
-                            );
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }).start();
+                        System.out.println("Cooking procedure started");
+//                        isCooking = true;
+
+                        new Thread(() -> {
+                            try {
+                                System.out.println("THis is the mode " + iiFace.getMode().getCurrentMode());
+                                String cookMode = iiFace.getMode().getCurrentMode();
+                                cooking.startCooking(
+                                        cookMode,
+                                        iiFace.getCurrentTemp(),
+                                        iiFace.getCurrentTimeMin()
+                                );
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }).start();
+                    }
+                    else {
+                        System.out.println("Door Is Open");
+                    }
 
 
                     break;
                 case 27:
                     cooking.setNumberOfStopTimesPressed(cooking.getNumberOfStopTimesPressed() + 1);
-                    cooking.stopCooking();
+                    cooking.stopCooking(false);
 
                     break;
                 case 28:
@@ -399,9 +414,11 @@ public class Controller {
                     {
                         doorMonitor.changeStatus();
                         UpdateBasedOnDoor();
-                    }else if (listIn.get(2) == 2) {
+                        sendMessageToUpdateDoor();
+                    }else if (listIn.get(1) == 2) {
                         doorMonitor.changeStatus();
                         UpdateBasedOnDoor();
+                        sendMessageToUpdateDoor();
                     }
                     break;
 
@@ -488,6 +505,10 @@ public class Controller {
 
         }
 
+        public void setIsCooking(boolean isCooking){
+            this.isCooking = isCooking;
+        }
+
 
 
         public void setUpTimer(){
@@ -513,6 +534,7 @@ public class Controller {
                             iiFace.setCurrentTimeMin(newMin);
                         }
                         else {
+                            System.out.println("IN the else i thought ");
                             int newTime = (int) iiFace.status.getTimeSec() - 1;
                             iiFace.status.displayNewTimeSec(newTime);
                             iiFace.setCurrentTimeSec(newTime);
@@ -529,7 +551,7 @@ public class Controller {
                     else {
                         // send a message to the cooking to stop cooking
                         try {
-                            cooking.stopCooking();
+                            cooking.stopCooking(false);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -548,21 +570,19 @@ public class Controller {
             cookingTimer.cancel();
         }
 
+        /**
+         * Method to send message to the FX to update the cavity
+         * @param cavityTemp the temp
+         * @throws IOException ..
+         */
+        public void updateCavityTemp(int cavityTemp) throws IOException {
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(14, cavityTemp)));
+        }
+
+
         public void UpdateBasedOnDoor() throws IOException {
-            if(doorMonitor.getDoorStatus()){
-                cooking.stopCooking();
-            }else{
-                new Thread(() -> {
-                    try {
-                        cooking.startCooking(
-                                iiFace.getMode().getCurrentMode(),
-                                iiFace.getCurrentTemp(),
-                                iiFace.getCurrentTimeMin()
-                        );
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).start();
+            if(doorMonitor.getDoorStatus() && isCooking){
+                cooking.stopCooking(true);
             }
         }
 
@@ -579,7 +599,8 @@ public class Controller {
      * Method to update the door
      */
         public void sendMessageToUpdateDoor() throws IOException{
-            socketClient.sendMessage(new ArrayList<>(Arrays.asList(1, doorMonitor.getDoorStatus() ? 1 : 2)));
+            System.out.println(doorMonitor.getDoorStatus());
+            socketClient.sendMessage(new ArrayList<>(Arrays.asList(7, doorMonitor.getDoorStatus() ? 1 : 2)));
         }
 
     /**
@@ -606,6 +627,7 @@ public class Controller {
             iiFace.setCurrentTemp(350);
             iiFace.setCurrentTimeMin(5);
             iiFace.setCurrentTimeSec(0);
+
 
             socketClient.sendMessage(new ArrayList<>(Arrays.asList(9)));
         }

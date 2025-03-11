@@ -174,9 +174,9 @@ public class FXdeviceSimulator extends Application {
                 // toggle door
                 case 7 -> {
                     if(currentMessage.get(1) == 1){
-                        //changeDoor();
+                        changeDoor();
                     }else {
-                        //changeDoorBack();
+                        changeDoorBack();
                     }
 
                 }
@@ -230,6 +230,11 @@ public class FXdeviceSimulator extends Application {
                         case pre.Nuggets-> sendMessage(new ArrayList<Integer>(Arrays.asList(12,1)));
                         case pre.Pizza -> sendMessage(new ArrayList<Integer>(Arrays.asList(12,2)));
                     }
+                }
+
+                // message to set the cavity temp
+                case 14 -> {
+                    setCavity(currentMessage.get(1));
                 }
             }
         }
@@ -393,19 +398,18 @@ public class FXdeviceSimulator extends Application {
         handle.setOnMouseClicked(event -> {
             if(doorStatus){
                 doorStatus = false;
-                changeDoor();
-//                try {
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(7,1)));
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
+                try {
+                    sendMessage(new ArrayList<Integer>(Arrays.asList(7,1)));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }else{
                 doorStatus = true;
-//                try {
-//                    sendMessage(new ArrayList<Integer>(Arrays.asList(7,2)));
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
+                try {
+                    sendMessage(new ArrayList<Integer>(Arrays.asList(7,2)));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }
@@ -570,8 +574,21 @@ public class FXdeviceSimulator extends Application {
 //                cavity.setText(String.valueOf(temp));
             }
         });
-
     }
+
+    /**
+     * Method to set the cavity temp
+     * @param cavityTemp the cavity temp
+     */
+    private void setCavity(int cavityTemp){
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                cavity.setText(String.valueOf(cavityTemp));
+            }
+        });
+    }
+
 
     /**
      * clear the Display if told by simulator
@@ -846,7 +863,7 @@ public class FXdeviceSimulator extends Application {
      */
     private void handleStop(){
         System.out.println("Clicked on the stop button");
-        // TODO : Pause the timer
+        //TODO : Pause the timer
     }
 
     /**
@@ -855,7 +872,7 @@ public class FXdeviceSimulator extends Application {
     private void handleClear() {
 
         System.out.println("Clicked on the clear button");
-        currentTempF.set(0); // TODO: Temp decrease over time eventually
+        currentTempF.set(0); //TODO: Temp decrease over time eventually
         currentTimeMinutes.set(0);
         currentTimeSeconds.set(0);
 
@@ -1144,7 +1161,7 @@ public class FXdeviceSimulator extends Application {
      * @param powerButton the power button
      */
     private void pressPower(Circle powerButton){
-        // TODO: send some info through socket possibly
+        //TODO: send some info through socket possibly
         if (isPowerOn){
             System.out.println("Power Off");
             // turn the power off and disable all the buttons
@@ -1199,11 +1216,19 @@ public class FXdeviceSimulator extends Application {
         heaterKill = true;
 
     }
+
+    /**
+     * Method to change to the door look
+     */
     private void changeDoor(){
         handle.setFill(Color.TRANSPARENT);
         door.setFill(Color.TRANSPARENT);
         door.setStroke(Color.TRANSPARENT);
     }
+
+    /**
+     * Method to change the door back to origninal position.
+     */
     private void changeDoorBack(){
         handle.setFill(Color.BLACK);
         door.setFill(Color.LIGHTGREY);

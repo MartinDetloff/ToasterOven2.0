@@ -158,6 +158,7 @@ public class InputInterface {
      */
     public void setCurrentTimeMin(int newTimeMin){
         this.currentTimeMin = newTimeMin;
+        status.displayNewTimeMin(newTimeMin);
     }
 
     /**
@@ -165,11 +166,14 @@ public class InputInterface {
      * @param newTimeSec
      */
     public void setCurrentTimeSec(int newTimeSec){
+        System.out.println("Setting the seconds to " + newTimeSec);
         this.currentTimeSec = newTimeSec;
+        status.displayNewTimeSec(newTimeSec);
     }
 
     public void setCurrentTemp(int newTemp){
         this.currentTemp = newTemp;
+        status.displayNewTemp(newTemp);
     }
     /**
      * Method to change the mode
