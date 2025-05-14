@@ -10,8 +10,8 @@ The simulation models real-world device behavior and interaction, including visu
 
 - 🍞 Simulates toaster oven components (heating elements, timer, buttons)
 - 🖥️ JavaFX-based GUI to interact with the device
-- ⚙️ Functional buttons for Start, Stop, and Toast Level
-- ⏱️ Timer and toasting cycle tracking
+- ⚙️ Functional buttons for Start, Stop, Modes, and Presets
+- ⏱️ Timer and cooking cycle tracking
 - 🔄 Internal state machine to manage heating and idle states
 
 ---
